@@ -1,0 +1,54 @@
+config SX937X_POWER_SUPPLY_ONLINE
+	bool "SX937X Power Supply Online"
+	depends on SX937X_SAR
+	default n
+	help
+	  Say Y here to enable power supply online support for SX937X SAR.
+	  If unsure, say N.
+
+config SX937X_USB_CAL
+	bool "SX937X USB Calibration"
+	depends on SX937X_SAR
+	default n
+	help
+	  Say Y here to enable USB calibration for SX937X SAR.
+	  If unsure, say N.
+
+config SX937X_FLIP_CAL
+	bool "SX937X Flip Calibration"
+	depends on SX937X_SAR
+	default n
+	help
+	  Say Y here to enable flip calibration for SX937X SAR.
+	  If unsure, say N.
+
+config SX937X_POWER_CONTROL_SUPPORT
+	bool "SX937X Power Control Support"
+	depends on SX937X_SAR
+	default n
+	help
+	  Say Y here to enable power control support for SX937X SAR.
+	  If unsure, say N.
+
+config SX937X_MTK_KERNEL419_CHARGER_TYPE
+	bool "SX937X MTK Kernel 4.19 Charger Type"
+	depends on SX937X_SAR
+	default n
+	help
+	  Say Y here to enable MTK Kernel 4.19 charger type for SX937X SAR.
+	  If unsure, say N.
+
+config SX937X_MTK_KERNEL5XX_CHARGER_TYPE
+	bool "SX937X MTK Kernel 5.xx Charger Type"
+	depends on SX937X_SAR
+	default n
+	help
+	  Say Y here to enable MTK Kernel 5.xx charger type for SX937X SAR.
+	  If unsure, say N.
+
+config SX937X_SAR
+	tristate "SX937X SAR"
+	default n
+	help
+	  Say Y here to build the SX937X SAR driver as a module.
+	  If unsure, say N.
