@@ -35,7 +35,7 @@
 #define NVT_DUMP_PARTITION_PATH "/data/local/tmp"
 
 static ktime_t start, end;
-const struct firmware *fw_entry = NULL;
+const struct firmware *fw_entry_n = NULL;
 static size_t fw_need_write_size = 0;
 static uint8_t *fwbuf = NULL;
 
@@ -49,25 +49,25 @@ struct nvt_ts_bin_map {
 
 static struct nvt_ts_bin_map *bin_map;
 
-static int32_t nvt_get_fw_need_write_size(const struct firmware *fw_entry)
+static int32_t nvt_get_fw_need_write_size(const struct firmware *fw_entry_n)
 {
 	int32_t i = 0;
 	int32_t total_sectors_to_check = 0;
 
-	total_sectors_to_check = fw_entry->size / FLASH_SECTOR_SIZE;
+	total_sectors_to_check = fw_entry_n->size / FLASH_SECTOR_SIZE;
 	/* printk("total_sectors_to_check = %d\n", total_sectors_to_check); */
 
 	for (i = total_sectors_to_check; i > 0; i--) {
 		/* printk("current end flag address checked = 0x%X\n", i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN); */
 		/* check if there is end flag "NVT" at the end of this sector */
-		if (strncmp(&fw_entry->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "NVT", NVT_FLASH_END_FLAG_LEN) == 0) {
+		if (strncmp(&fw_entry_n->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "NVT", NVT_FLASH_END_FLAG_LEN) == 0) {
 			fw_need_write_size = i * FLASH_SECTOR_SIZE;
 			NVT_LOG("fw_need_write_size = %zu(0x%zx), NVT end flag\n", fw_need_write_size, fw_need_write_size);
 			return 0;
 		}
 
 		/* check if there is end flag "MOD" at the end of this sector */
-		if (strncmp(&fw_entry->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "MOD", NVT_FLASH_END_FLAG_LEN) == 0) {
+		if (strncmp(&fw_entry_n->data[i * FLASH_SECTOR_SIZE - NVT_FLASH_END_FLAG_LEN], "MOD", NVT_FLASH_END_FLAG_LEN) == 0) {
 			fw_need_write_size = i * FLASH_SECTOR_SIZE;
 			NVT_LOG("fw_need_write_size = %zu(0x%zx), MOD end flag\n", fw_need_write_size, fw_need_write_size);
 			return 0;
@@ -284,11 +284,11 @@ return:
 *******************************************************/
 static void update_firmware_release(void)
 {
-	if (fw_entry) {
-		release_firmware(fw_entry);
+	if (fw_entry_n) {
+		release_firmware(fw_entry_n);
 	}
 
-	fw_entry = NULL;
+	fw_entry_n = NULL;
 }
 
 /*******************************************************
@@ -310,29 +310,29 @@ static int32_t update_firmware_request(char *filename)
 	while (1) {
 		NVT_LOG("filename is %s\n", filename);
 
-		ret = request_firmware(&fw_entry, filename, &ts->client->dev);
+		ret = request_firmware(&fw_entry_n, filename, &ts->client->dev);
 		if (ret) {
 			NVT_ERR("firmware load failed, ret=%d\n", ret);
 			goto request_fail;
 		}
 
 		// check FW need to write size
-		if (nvt_get_fw_need_write_size(fw_entry)) {
+		if (nvt_get_fw_need_write_size(fw_entry_n)) {
 			NVT_ERR("get fw need to write size fail!\n");
 			ret = -EINVAL;
 			goto invalid;
 		}
 
 		// check if FW version add FW version bar equals 0xFF
-		if (*(fw_entry->data + FW_BIN_VER_OFFSET) + *(fw_entry->data + FW_BIN_VER_BAR_OFFSET) != 0xFF) {
+		if (*(fw_entry_n->data + FW_BIN_VER_OFFSET) + *(fw_entry_n->data + FW_BIN_VER_BAR_OFFSET) != 0xFF) {
 			NVT_ERR("bin file FW_VER + FW_VER_BAR should be 0xFF!\n");
-			NVT_ERR("FW_VER=0x%02X, FW_VER_BAR=0x%02X\n", *(fw_entry->data+FW_BIN_VER_OFFSET), *(fw_entry->data+FW_BIN_VER_BAR_OFFSET));
+			NVT_ERR("FW_VER=0x%02X, FW_VER_BAR=0x%02X\n", *(fw_entry_n->data+FW_BIN_VER_OFFSET), *(fw_entry_n->data+FW_BIN_VER_BAR_OFFSET));
 			ret = -ENOEXEC;
 			goto invalid;
 		}
 
 		/* BIN Header Parser */
-		ret = nvt_bin_header_parser(fw_entry->data, fw_entry->size);
+		ret = nvt_bin_header_parser(fw_entry_n->data, fw_entry_n->size);
 		if (ret) {
 			NVT_ERR("bin header parser failed\n");
 			goto invalid;
@@ -810,7 +810,7 @@ static int32_t nvt_download_firmware_hw_crc(void)
 		nvt_bootloader_reset();
 
 		/* Start to write firmware process */
-		ret = nvt_write_firmware(fw_entry->data, fw_entry->size);
+		ret = nvt_write_firmware(fw_entry_n->data, fw_entry_n->size);
 		if (ret) {
 			NVT_ERR("Write_Firmware failed. (%d)\n", ret);
 			goto fail;
@@ -892,7 +892,7 @@ static int32_t nvt_download_firmware(void)
 		nvt_write_addr(ts->mmap->EVENT_BUF_ADDR | EVENT_MAP_RESET_COMPLETE, 0x00);
 
 		/* Start to write firmware process */
-		ret = nvt_write_firmware(fw_entry->data, fw_entry->size);
+		ret = nvt_write_firmware(fw_entry_n->data, fw_entry_n->size);
 		if (ret) {
 			NVT_ERR("Write_Firmware failed. (%d)\n", ret);
 			goto fail;

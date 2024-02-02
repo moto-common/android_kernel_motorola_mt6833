@@ -52,6 +52,17 @@ endif
     # Do build-in for Makefile checking
     # export CONFIG_WLAN_DRV_BUILD_IN=y
 
+    # for gen4m options
+    export CONFIG_MTK_COMBO_WIFI_HIF=axi
+    export MTK_COMBO_CHIP=SOC2_1X1
+    export BT_PLATFORM=6833
+    export WLAN_CHIP_ID=6833
+    export MTK_ANDROID_WMT=y
+    export MTK_ANDROID_EMI=y
+    export WIFI_IP_SET=1
+    export MTK_WLAN_SERVICE=yes
+    export CONNAC_VER=1_0
+
     ifeq ($(CONFIG_WLAN_DRV_BUILD_IN),y)
         PATH_TO_WMT_DRV      = vendor/mediatek/kernel_modules/connectivity/common
         PATH_TO_WLAN_CHR_DRV = vendor/mediatek/kernel_modules/connectivity/wlan/adaptor
@@ -97,6 +108,14 @@ endif
         obj-y += wmt_chrdev_wifi/
         obj-y += wlan_drv_gen4m/
     endif
+
+    obj-$(CONFIG_MTK_COMBO_WIFI) += wlan/adaptor/
+    obj-$(CONFIG_MTK_COMBO_CHIP_CONSYS_6833) += wlan/core/gen4m/
+    obj-$(CONFIG_MTK_BTIF) += bt/mt66xx/wmt/
+    obj-$(CONFIG_MTK_COMBO_GPS) += gps/
+    obj-$(CONFIG_MTK_FMRADIO) += fmradio/
+    obj-$(CONFIG_MTK_CONNFEM) += connfem/
+    obj-$(CONFIG_MTK_CONNFEM) += common/
 
 # Otherwise we were called directly from the command line;
 # invoke the kernel build system.
